@@ -95,6 +95,9 @@ And locally:
 
 ![logs-local](./docs/images/logs-local.png)
 
+> **Warning**
+> Be mindful of the sensitive data you may log. The middleware will log the request body, so make sure you also setup the appropriate `redact` config in the logger.
+
 With Express:
 
 ```typescript
