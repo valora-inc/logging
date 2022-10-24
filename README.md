@@ -1,6 +1,6 @@
 # @valora/log
 
-Thin wrapper for bunyan log on Google Cloud and local development, with sensitive data redaction.
+Thin wrapper for bunyan structured logs on Google Cloud and local development, with sensitive data redaction.
 
 ## Installing the library
 
@@ -20,9 +20,9 @@ const logger = createLogger({
 })
 
 logger.info({ foo: bar }, 'Hello world!')
-logger.warn(error, 'A non fatal error')
+logger.warn(err, 'A non fatal error')
 logger.warn({ err, foo: bar }, 'A non fatal error')
-logger.error(error, 'Something went wrong')
+logger.error(err, 'Something went wrong')
 logger.error({ err, foo: bar }, 'Something went wrong')
 ```
 
