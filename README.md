@@ -1,90 +1,132 @@
-# typescript-app-starter
+# @valora/log
 
-A starter template for Valora TypeScript projects with best practices.
+Thin wrapper for bunyan log on Google Cloud and local development, with sensitive data redaction.
 
-## What's in the stack?
+## Installing the library
 
-- [TypeScript](https://www.typescriptlang.org/)
-- Unit testing with [Jest](https://jestjs.io)
-- Linting with [ESLint](https://eslint.org/), configured with [@valora/eslint-config-typescript](https://github.com/valora-inc/eslint-config-typescript)
-- Automatic code formating with [Prettier](https://prettier.io/), configured with [@valora/prettier-config](https://github.com/valora-inc/prettier-config)
-- Scripts using [ShellJS](https://github.com/shelljs/shelljs)
-  - Linted and statically checked with [TypeScript](https://www.typescriptlang.org/)
-- CI/CD with [GitHub Actions](https://docs.github.com/en/actions)
-- Automated dependency updates with [Renovate](https://renovatebot.com/), configured with [valora-inc/renovate-config](https://github.com/valora-inc/renovate-config)
-
-## How to use this?
-
-Above the file list, click the big green button: `Use this template`.
-
-Or using [GitHub CLI](https://cli.github.com/):
-
-```sh
-gh repo create --template valora-inc/typescript-app-starter valora-inc/new-repo
+```
+yarn add @valora/log
 ```
 
-## Structure
+## Using the library
 
-Here's the recommended structure:
+### Simple usage
 
-- [`src`](src): source code
-  - [`index.ts`](src/index.ts): example source file
-  - [`index.test.ts`](src/index.test.ts): unit tests for `index.ts`
-- [`scripts`](scripts): more complex scripts in TypeScript
-  - [`example.ts`](scripts/example.ts): example script using [ShellJS](https://github.com/shelljs/shelljs)
+```typescript
+import { createLogger } from '@valora/log'
 
-## Type Checking
+const logger = createLogger({
+  level: 'info', // Optional, defaults to 'info'
+})
 
-This project uses [TypeScript](https://www.typescriptlang.org/). It's recommended to get TypeScript set up for your editor to get a really great in-editor experience with type checking and auto-complete. To run type checking across the whole project, run `yarn typecheck`.
+logger.info({ foo: bar }, 'Hello world!')
+logger.warn(error, 'A non fatal error')
+logger.warn({ err, foo: bar }, 'A non fatal error')
+logger.error(error, 'Something went wrong')
+logger.error({ err, foo: bar }, 'Something went wrong')
+```
 
-## Testing
+### Redacting sensitive data
 
-For lower level tests of utilities and individual modules, we use [Jest](https://jestjs.io).
+#### Redacting specific fields
 
-## Test coverage checks
+```typescript
+import { createLogger } from '@valora/log'
 
-### For private repos
+const logger = createLogger({
+  redact: {
+    paths: [
+      'req.headers.authorization',
+      'req.headers.cookie',
+      'req.body.token',
+      '*.password',
+    ],
+  },
+})
 
-For private repos, Jest can be configured to terminate with an error status if there is less coverage than some configurable threshold.
-This project applies coverage thresholds for `yarn test:ci`, so CI checks will fail if there is insufficient test coverage.
+// The authorization header and the other fields will be redacted
+logger.info({ req } }, 'Request')
 
-Make sure to add fixture data, mocks, or other files and file paths that you don't want to count towards your coverage thresholds
-to `coveragePathIgnorePatterns` in `jest.config.js`.
+// Password will be redacted
+logger.info({ foo: { password: 'secret' } }, 'Password redacted')
+```
 
-### For public repos
+This functionality is provided by [fast-redact](https://github.com/davidmarkclements/fast-redact).
 
-For public repos, [Codecov](https://codecov.io) is free. The tool offers two nice features that Jest doesn't offer out of the box:
+On top of the documentation found in [fast-redact](https://github.com/davidmarkclements/fast-redact), there's also some good documentation from [pino](https://github.com/pinojs/pino/blob/master/docs/redaction.md).
 
-- "auto" coverage targets, which track the current coverage of the `main` branch. This lets you guarantee that test coverage increases over time.
-- "patch" coverage, counting only the lines modified by the current PR
+#### Redacting patterns
 
-Here's how to set it up:
+The global replace feature, allows replacing patterns anywhere in the log record. This is useful for redacting sensitive data that isn't tied to a specific known field. e.g. phone numbers, emails, etc.
 
-- Get a token for the repo [following these instructions](https://docs.codecov.com/docs#step-2-get-the-repository-upload-token).
-- Add `CODECOV_TOKEN` to the repo secrets [following these instructions](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/managing-encrypted-secrets-for-your-repository-and-organization-for-codespaces#adding-secrets-for-a-repository).
-- Uncomment the `Upload Coverage Report` and `Upload coverage to Codecov` steps in `workflow.yaml`
+```typescript
+import { createLogger } from '@valora/log'
 
-If you set up Codecov, you may consider turning off Jest coverage checks for simplicity. You can do this by removing the
-`coverageThreshold` parameter from `jest.config.js`.
+const logger = createLogger({
+  redact: {
+    globalReplace: (value: string) => {
+      // replaces values that look like phone numbers
+      // `%2B` is the URL encoded version of `+`
+      return value.replace(
+        /(?:\+|%2B)[1-9]\d{1,14}/gi,
+        (phoneNumber) => phoneNumber.slice(0, -4) + 'XXXX',
+      )
+    },
+  },
+})
 
-## Linting
+// will redact the phone number both in the message and in the logged object.
+logger.info({ a: { b: { c: 'Call me at +1234567890' } } }, "A message with a phone number: +123456789"
+```
 
-This project uses [ESLint](https://eslint.org/) for linting. That is configured in [`.eslintrc.js`](.eslintrc.js).
+### Logging middleware
 
-## Formatting
+The middleware will automatically log the request and response.
 
-We use [Prettier](https://prettier.io) for auto-formatting. It's recommended to install an editor plugin (like the [VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) to get auto-formatting on save. There's also a `yarn format` script you can run to format all files in the project.
+It also shows nicely formatted request logs for Cloud Functions in Logs Explorer (App Engine does this automatically).
 
-## Scripts
+Examples in Logs Explorer with a Cloud Function:
 
-We use TypeScript instead of shell scripts. This is it to avoid the many pitfalls of shell scripts.
+![logs-gcf](./docs/images/logs-gcf.png)
+![logs-gcf-warn-expanded](./docs/images/logs-gcf-warn-expanded.png)
+![logs-gcf-expanded](./docs/images/logs-gcf-expanded.png)
 
-To run external commands we recommend using [ShellJS](https://github.com/shelljs/shelljs).
+And locally:
 
-## GitHub Actions
+![logs-local](./docs/images/logs-local.png)
 
-We use [GitHub Actions](https://docs.github.com/en/actions) for continuous integration and deployment (CI/CD). Anything that gets into the `main` branch will be deployed using `yarn deploy` after running tests/build/etc.
+With Express:
 
-## Renovate
+```typescript
+import express from 'express'
 
-[Renovate](https://renovatebot.com/) ensures our dependencies are kept up to date. It's configured with our shared config in [`renovate.json5`](renovate.json5).
+const app = express()
+app.use(createLoggingMiddleware({ projectId: 'test-project', logger }))
+```
+
+With Google Cloud Functions:
+
+```typescript
+import { http } from '@google-cloud/functions-framework'
+
+const loggingMiddleware = createLoggingMiddleware({
+  projectId: 'test-project',
+  logger,
+})
+
+http('myFunction', (req, res) =>
+  loggingMiddleware(req, res, () => {
+    res.send('Hello World!')
+  }),
+)
+```
+
+## Resources
+
+- [bunyan](https://github.com/trentm/node-bunyan)
+- [@google-cloud/logging-bunyan](https://github.com/googleapis/nodejs-logging-bunyan)
+- [@google-cloud/logging](https://github.com/googleapis/nodejs-logging)
+
+## Publishing
+
+TODO
