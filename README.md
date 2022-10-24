@@ -45,7 +45,7 @@ const logger = createLogger({
 })
 
 // The authorization header and the other fields will be redacted
-logger.info({ req } }, 'Request')
+logger.info({ req }, 'Request')
 
 // Password will be redacted
 logger.info({ foo: { password: 'secret' } }, 'Password redacted')
