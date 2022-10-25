@@ -1,7 +1,7 @@
 import Logger from 'bunyan'
 import express from 'express'
 import request from 'supertest'
-import { createLogger, createLoggingMiddleware } from './log'
+import { createLogger, createLoggingMiddleware } from './logging'
 import MockDate from 'mockdate'
 
 MockDate.set(new Date('2022-10-18T23:36:07.071Z'))
