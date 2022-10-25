@@ -1,11 +1,11 @@
-# @valora/log
+# @valora/logging
 
 Thin wrapper for bunyan structured logs on Google Cloud and local development, with sensitive data redaction.
 
 ## Installing the library
 
 ```
-yarn add @valora/log
+yarn add @valora/logging
 ```
 
 ## Using the library
@@ -13,7 +13,7 @@ yarn add @valora/log
 ### Simple usage
 
 ```typescript
-import { createLogger } from '@valora/log'
+import { createLogger } from '@valora/logging'
 
 const logger = createLogger({
   level: 'info', // Optional, defaults to `LOG_LEVEL` env var or 'info'
@@ -31,7 +31,7 @@ logger.error({ err, foo: bar }, 'Something went wrong')
 #### Redacting specific fields
 
 ```typescript
-import { createLogger } from '@valora/log'
+import { createLogger } from '@valora/logging'
 
 const logger = createLogger({
   redact: {
@@ -60,7 +60,7 @@ There's also some good documentation from [pino](https://github.com/pinojs/pino/
 The global replace feature, allows replacing patterns anywhere in the log record. This is useful for redacting sensitive data that isn't tied to a specific known field. e.g. phone numbers, emails, etc.
 
 ```typescript
-import { createLogger } from '@valora/log'
+import { createLogger } from '@valora/logging'
 
 const logger = createLogger({
   redact: {

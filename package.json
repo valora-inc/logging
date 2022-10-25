@@ -1,9 +1,9 @@
 {
-  "name": "@valora/log",
+  "name": "@valora/logging",
   "version": "1.0.0",
   "main": "dist/log.js",
   "typings": "dist/log.d.ts",
-  "repository": "https://github.com/valora-inc/log",
+  "repository": "https://github.com/valora-inc/logging",
   "author": "Valora Inc",
   "license": "Apache-2.0",
   "engines": {
