@@ -16,7 +16,7 @@ yarn add @valora/log
 import { createLogger } from '@valora/log'
 
 const logger = createLogger({
-  level: 'info', // Optional, defaults to 'info'
+  level: 'info', // Optional, defaults to `LOG_LEVEL` env var or 'info'
 })
 
 logger.info({ foo: bar }, 'Hello world!')
@@ -51,9 +51,9 @@ logger.info({ req }, 'Request')
 logger.info({ foo: { password: 'secret' } }, 'Password redacted')
 ```
 
-This functionality is provided by [fast-redact](https://github.com/davidmarkclements/fast-redact).
+This functionality is built on top of [fast-redact](https://github.com/davidmarkclements/fast-redact).
 
-On top of the documentation found in [fast-redact](https://github.com/davidmarkclements/fast-redact), there's also some good documentation from [pino](https://github.com/pinojs/pino/blob/master/docs/redaction.md).
+There's also some good documentation from [pino](https://github.com/pinojs/pino/blob/master/docs/redaction.md) which uses the same library.
 
 #### Redacting patterns
 
