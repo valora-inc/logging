@@ -12,6 +12,18 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "log",
+    "logging",
+    "cloud",
+    "google cloud",
+    "google logging",
+    "bunyan",
+    "redact",
+    "sensor",
+    "cloud functions",
+    "app engine"
+  ],
   "scripts": {
     "build": "tsc",
     "build:scripts": "tsc --project scripts/tsconfig.json",
