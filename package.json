@@ -23,7 +23,7 @@
     "logs explorer",
     "bunyan",
     "redact",
-    "sensor",
+    "censor",
     "sensitive data redaction"
   ],
   "scripts": {
