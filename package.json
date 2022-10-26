@@ -26,6 +26,8 @@
     "supercheck": "yarn format && yarn lint:fix && yarn typecheck && yarn test"
   },
   "dependencies": {
+    "@types/bunyan": "^1.8.8",
+    "@types/fast-redact": "^3.0.2",
     "@google-cloud/logging": "^10.1.11",
     "@google-cloud/logging-bunyan": "^4.1.4",
     "bunyan": "^1.8.15",
@@ -33,10 +35,8 @@
     "fast-redact": "^3.1.2"
   },
   "devDependencies": {
-    "@types/bunyan": "^1.8.8",
     "@types/bunyan-prettystream": "^0.1.32",
     "@types/express": "^4.17.14",
-    "@types/fast-redact": "^3.0.2",
     "@types/jest": "^29.2.0",
     "@types/shelljs": "^0.8.11",
     "@types/supertest": "^2.0.12",
