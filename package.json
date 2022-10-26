@@ -38,7 +38,7 @@
     "test:watch": "yarn test --watch",
     "test:ci": "yarn test --ci --coverage",
     "supercheck": "yarn format && yarn lint:fix && yarn typecheck && yarn test",
-    "release": "yarn semantic-release"
+    "release": "semantic-release"
   },
   "dependencies": {
     "@google-cloud/logging": "^10.1.11",
