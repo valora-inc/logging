@@ -18,11 +18,12 @@
     "cloud",
     "google cloud",
     "google logging",
+    "cloud functions",
+    "app engine",
     "bunyan",
     "redact",
     "sensor",
-    "cloud functions",
-    "app engine"
+    "sensitive data redaction"
   ],
   "scripts": {
     "build": "tsc",
