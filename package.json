@@ -20,6 +20,7 @@
     "google logging",
     "cloud functions",
     "app engine",
+    "logs explorer",
     "bunyan",
     "redact",
     "sensor",
