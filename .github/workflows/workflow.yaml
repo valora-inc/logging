@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - main
-      # TODO: remove before merging
-      - jeanregisser/semantic-release
   # ..and any pull request.
   pull_request:
 
@@ -57,8 +55,7 @@ jobs:
   #          token: ${{ secrets.CODECOV_TOKEN }}
   publish:
     name: Publish to NPM
-    # TODO: uncomment before merging
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs:
       - check-for-sh
       - lint

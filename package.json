@@ -65,8 +65,7 @@
   "prettier": "@valora/prettier-config",
   "release": {
     "branches": [
-      "main",
-      "jeanregisser/semantic-release"
+      "main"
     ],
     "preset": "conventionalcommits"
   },
