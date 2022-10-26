@@ -2,7 +2,7 @@
 
 [![GitHub License](https://img.shields.io/github/license/valora-inc/logging?color=blue)](https://github.com/valora-inc/logging/blob/main/LICENSE)
 [![npm version](https://img.shields.io/npm/v/@valora/logging.svg)](https://www.npmjs.com/package/@valora/logging)
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/valora-inc/logging/Workflow/main)](https://github.com/valora-inc/logging/actions/workflows/workflow.yaml?query=branch%3Amain)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/valora-inc/logging/Workflow/main)](https://github.com/valora-inc/logging/actions/workflows/workflow.yaml?query=branch%3Amain)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/valora-inc/logging#contributing)
 
 Thin wrapper for bunyan structured logs on Google Cloud and local development, with sensitive data redaction.
