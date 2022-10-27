@@ -55,7 +55,7 @@ jobs:
   #          token: ${{ secrets.CODECOV_TOKEN }}
   publish:
     name: Publish to NPM
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     needs:
       - check-for-sh
       - lint
@@ -72,7 +72,7 @@ jobs:
         uses: google-github-actions/get-secretmanager-secrets@v0
         with:
           secrets: |-
-            NPM_TOKEN:projects/1027349420744/secrets/NPM_TOKEN
+            NPM_TOKEN:celo-mobile-mainnet/NPM_TOKEN
       - uses: actions/setup-node@v3
         with:
           node-version: '16'
