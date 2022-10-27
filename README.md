@@ -1,5 +1,10 @@
 # @valora/logging
 
+[![GitHub License](https://img.shields.io/github/license/valora-inc/logging?color=blue)](https://github.com/valora-inc/logging/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@valora/logging.svg)](https://www.npmjs.com/package/@valora/logging)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/valora-inc/logging/Workflow/main)](https://github.com/valora-inc/logging/actions/workflows/workflow.yaml?query=branch%3Amain)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/valora-inc/logging#contributing)
+
 Thin wrapper for bunyan structured logs on Google Cloud and local development, with sensitive data redaction.
 
 ## Installing the library
@@ -130,6 +135,10 @@ http('myFunction', (req, res) =>
 - [@google-cloud/logging-bunyan](https://github.com/googleapis/nodejs-logging-bunyan)
 - [@google-cloud/logging](https://github.com/googleapis/nodejs-logging)
 
-## Publishing
+## Contributing
 
-TODO
+- [Reporting issues](https://github.com/valora-inc/logging/issues)
+- [Submitting a pull request](https://github.com/valora-inc/logging/pulls)
+- Publishing updates is done automatically via [semantic-release](https://github.com/semantic-release/semantic-release).
+  Remember to use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) or your PR will be rejected (since
+  merging it would mess up the changelog and version numbers).
