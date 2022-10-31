@@ -126,6 +126,8 @@ export function createLoggingMiddleware({
       span?: string,
       sampled?: boolean,
     ) => {
+      const { requestUrl } = httpRequest
+      const cloudFunctionName = process.env.K_SERVICE
       logger.info(
         {
           // Log more info about the request
@@ -135,11 +137,20 @@ export function createLoggingMiddleware({
           // Note: Contrary to what the documentation says for `makeMiddleware`,
           // Cloud Functions (at least the gen1 version we use) doesn't already log the httpRequest
           // So we do it ourselves
-          ...(process.env.K_SERVICE
+          ...(cloudFunctionName
             ? {
                 // This shows the nicely formatted request log in Logs Explorer.
                 // See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#HttpRequest
-                httpRequest,
+                httpRequest: {
+                  ...httpRequest,
+                  // Add the Cloud Function name to the path so it's easier to see which function was called in Logs Explorer
+                  // By default it only shows `/?${query}`
+                  requestUrl:
+                    requestUrl?.startsWith('/') &&
+                    !requestUrl.startsWith(`/${cloudFunctionName}`)
+                      ? `/${cloudFunctionName}${requestUrl}`
+                      : requestUrl,
+                },
                 [LOGGING_TRACE_KEY]: trace,
                 [LOGGING_SPAN_KEY]: span,
                 [LOGGING_SAMPLED_KEY]: sampled,
