@@ -144,7 +144,8 @@ export function createLoggingMiddleware({
                 httpRequest: {
                   ...httpRequest,
                   // Add the Cloud Function name to the path so it's easier to see which function was called in Logs Explorer
-                  // By default it only shows `/?${query}`
+                  // By default it only shows `/?${query}` and hides the function name (and execution id) pills
+                  // from the summary line which are otherwise present when httpRequest is not set
                   requestUrl:
                     requestUrl?.startsWith('/') &&
                     !requestUrl.startsWith(`/${cloudFunctionName}`)
