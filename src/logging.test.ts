@@ -302,7 +302,7 @@ describe('logging middleware', () => {
         "hostname": Any<String>,
         "httpRequest": {
           "requestMethod": "POST",
-          "requestUrl": "/?anotherPhone=%2B123456XXXX",
+          "requestUrl": "/testLogger/?anotherPhone=%2B123456XXXX",
           "responseSize": 16,
           "status": 200,
         },
