@@ -176,32 +176,44 @@ describe('logger', () => {
 })
 
 describe('logging middleware', () => {
-  const logger = createLogger({
-    redact: {
-      paths: [
-        'pepper',
-        '*.pepper',
-        'req.*.pepper',
-        'req.headers.authorization',
-        'req.headers.cookie',
-      ],
-      censor: (_value: any) => {
-        return '***REDACTED***'
+  function createServer(
+    middlewareOptions?: Partial<Parameters<typeof createLoggingMiddleware>[0]>,
+  ) {
+    const logger = createLogger({
+      redact: {
+        paths: [
+          'pepper',
+          '*.pepper',
+          'req.*.pepper',
+          'req.headers.authorization',
+          'req.headers.cookie',
+        ],
+        censor: (_value: any) => {
+          return '***REDACTED***'
+        },
+        globalReplace: globalReplacePhoneNumbers,
       },
-      globalReplace: globalReplacePhoneNumbers,
-    },
-  })
-  const server = express()
-  server.use(createLoggingMiddleware({ projectId: 'test-project', logger }))
-  server.post('/', (req, res) => {
-    // @ts-ignore
-    logger.info({ req }, 'this helps ensure req is logged and not mutated')
+    })
+    const server = express()
+    server.use(
+      createLoggingMiddleware({
+        projectId: 'test-project',
+        logger,
+        ...middlewareOptions,
+      }),
+    )
+    server.post('/', (req, res) => {
+      // @ts-ignore
+      logger.info({ req }, 'this helps ensure req is logged and not mutated')
 
-    res.status(200).send({ message: 'OK' })
-  })
+      res.status(200).send({ message: 'OK' })
+    })
+
+    return server
+  }
 
   it('should log the request details once finished', async () => {
-    await request(server)
+    await request(createServer())
       .post('/?anotherPhone=%2B1234567890')
       .send({
         phoneNumber: '+1234567890',
@@ -268,7 +280,7 @@ describe('logging middleware', () => {
     // Simulate a Cloud Functions environment
     process.env.K_SERVICE = 'testLogger'
 
-    await request(server)
+    await request(createServer())
       .post('/?anotherPhone=%2B1234567890')
       .send({
         phoneNumber: '+1234567890',
@@ -287,13 +299,16 @@ describe('logging middleware', () => {
             host: expect.any(String),
             'x-cloud-trace-context': expect.any(String),
           },
+
           remotePort: expect.any(Number),
         },
+
         res: {
           // Can't mock the Date there
           // See https://github.com/sinonjs/fake-timers/issues/344
           header: expect.any(String),
         },
+
         'logging.googleapis.com/spanId': expect.any(String),
         'logging.googleapis.com/trace': expect.any(String),
       },
@@ -311,7 +326,7 @@ describe('logging middleware', () => {
         "logging.googleapis.com/trace": Any<String>,
         "logging.googleapis.com/trace_sampled": false,
         "msg": "Request finished",
-        "name": "default",
+        "name": "testLogger",
         "pid": Any<Number>,
         "req": {
           "headers": {
@@ -340,5 +355,106 @@ describe('logging middleware', () => {
       }
     `,
     )
+  })
+
+  it('should log the request details with additional fields in an App Engine environment once finished', async () => {
+    // Simulate an App Engine environment
+    process.env.GAE_SERVICE = 'test-service'
+
+    await request(createServer())
+      .post('/?anotherPhone=%2B1234567890')
+      .send({
+        phoneNumber: '+1234567890',
+      })
+      .set('Content-Type', 'application/json')
+      .set('Authorization', 'SECRET_AUTH_HEADER')
+      .expect(200)
+      .expect({ message: 'OK' })
+
+    expect(spyLoggerEmit).toHaveBeenCalledTimes(2)
+    expect(spyLoggerEmit.mock.calls[1][0]).toMatchInlineSnapshot(
+      {
+        ...DEFAULT_PROPERTY_MATCHER,
+        req: {
+          headers: {
+            host: expect.any(String),
+            'x-cloud-trace-context': expect.any(String),
+          },
+
+          remotePort: expect.any(Number),
+        },
+
+        res: {
+          // Can't mock the Date there
+          // See https://github.com/sinonjs/fake-timers/issues/344
+          header: expect.any(String),
+        },
+
+        'logging.googleapis.com/spanId': expect.any(String),
+        'logging.googleapis.com/trace': expect.any(String),
+      },
+      `
+      {
+        "hostname": Any<String>,
+        "httpRequest": {
+          "requestMethod": "POST",
+          "requestUrl": "/?anotherPhone=%2B123456XXXX",
+          "responseSize": 16,
+          "status": 200,
+        },
+        "level": 30,
+        "logging.googleapis.com/spanId": Any<String>,
+        "logging.googleapis.com/trace": Any<String>,
+        "logging.googleapis.com/trace_sampled": false,
+        "msg": "Request finished",
+        "name": "test-service",
+        "pid": Any<Number>,
+        "req": {
+          "headers": {
+            "accept-encoding": "gzip, deflate",
+            "authorization": "***REDACTED***",
+            "connection": "close",
+            "content-length": "29",
+            "content-type": "application/json",
+            "host": Any<String>,
+            "x-cloud-trace-context": Any<String>,
+          },
+          "method": "POST",
+          "query": {
+            "anotherPhone": "+123456XXXX",
+          },
+          "remoteAddress": "::ffff:127.0.0.1",
+          "remotePort": Any<Number>,
+          "url": "/?anotherPhone=%2B123456XXXX",
+        },
+        "res": {
+          "header": Any<String>,
+          "statusCode": 200,
+        },
+        "time": 2022-10-18T23:36:07.071Z,
+        "v": 0,
+      }
+    `,
+    )
+  })
+
+  it('should exclude the httpRequest field in an Google environment when the option is specified', async () => {
+    // Simulate an App Engine environment
+    process.env.GAE_SERVICE = 'test-service'
+
+    await request(createServer({ excludeHttpRequestField: true }))
+      .post('/?anotherPhone=%2B1234567890')
+      .send({
+        phoneNumber: '+1234567890',
+      })
+      .set('Content-Type', 'application/json')
+      .set('Authorization', 'SECRET_AUTH_HEADER')
+      .expect(200)
+      .expect({ message: 'OK' })
+
+    expect(spyLoggerEmit).toHaveBeenCalledTimes(2)
+    const logRecord = spyLoggerEmit.mock.calls[1][0]
+    expect(logRecord).not.toHaveProperty('httpRequest')
+    expect(logRecord).toHaveProperty('req')
   })
 })

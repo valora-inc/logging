@@ -104,13 +104,19 @@ export function createLogger({
 
 // Adapted from https://github.com/googleapis/nodejs-logging-bunyan/blob/4de2b3dd9e8f6b336d9ca3609f775046a6f74424/src/middleware/express.ts
 // This logs the request and response objects for all requests.
-// It also shows nicely formatted request logs for Cloud Functions in Logs Explorer (App Engine does this automatically).
+// It also shows nicely formatted request log in Logs Explorer.
 export function createLoggingMiddleware({
   projectId,
   logger,
+  excludeHttpRequestField,
 }: {
   projectId: string
   logger: Logger
+  // If true, the `httpRequest` field is excluded from the emitted log record for finished requests.
+  // This is the one which shows the nicely formatted request summary in Logs Explorer.
+  // This only applies to a Google environment (App Engine or Cloud Functions).
+  // Defaults to false.
+  excludeHttpRequestField?: boolean
 }) {
   function makeChildLogger(trace: string, span?: string) {
     return logger.child(
@@ -127,6 +133,7 @@ export function createLoggingMiddleware({
       sampled?: boolean,
     ) => {
       const { requestUrl } = httpRequest
+      const googleServiceName = getGoogleServiceName()
       const cloudFunctionName = process.env.K_SERVICE
       logger.info(
         {
@@ -134,10 +141,7 @@ export function createLoggingMiddleware({
           // See also the serializers for these fields
           req,
           res,
-          // Note: Contrary to what the documentation says for `makeMiddleware`,
-          // Cloud Functions (at least the gen1 version we use) doesn't already log the httpRequest
-          // So we do it ourselves
-          ...(cloudFunctionName
+          ...(googleServiceName && !excludeHttpRequestField
             ? {
                 // This shows the nicely formatted request log in Logs Explorer.
                 // See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#HttpRequest
@@ -147,6 +151,7 @@ export function createLoggingMiddleware({
                   // By default it only shows `/?${query}` and hides the function name (and execution id) pills
                   // from the summary line which are otherwise present when httpRequest is not set
                   requestUrl:
+                    cloudFunctionName &&
                     requestUrl?.startsWith('/') &&
                     !requestUrl.startsWith(`/${cloudFunctionName}`)
                       ? `/${cloudFunctionName}${requestUrl}`
