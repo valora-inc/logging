@@ -346,10 +346,10 @@
     "@google-cloud/logging" "^10.1.11"
     google-auth-library "^8.0.2"
 
-"@google-cloud/logging@^10.1.11", "@google-cloud/logging@^10.2.2":
-  version "10.2.2"
-  resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-10.2.2.tgz#66dca2bad0f12ecae000470739d912fb6dea6fcd"
-  integrity sha512-ONb5z7gAj7DKVNYRShwHACVm6/utRcRJ7yFkCxHywRAI5cFp2KDyShn5yNUx+4nNAAX7QrFektt5wZkv2yPfFg==
+"@google-cloud/logging@^10.1.11", "@google-cloud/logging@^10.2.3":
+  version "10.3.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-10.3.0.tgz#1ea51db69f1bd0d3edbb5f527b3453f272c2aefb"
+  integrity sha512-3QNSMci/8mmvLs4Iyb6Z/pFT/lJCDPWGWSRx08+Yi254xpva32pOU0grzgbPYls8SFhDWUQgYr9DGZg+IH0kEQ==
   dependencies:
     "@google-cloud/common" "^4.0.0"
     "@google-cloud/paginator" "^4.0.0"
@@ -361,7 +361,7 @@
     extend "^3.0.2"
     gcp-metadata "^4.0.0"
     google-auth-library "^8.0.2"
-    google-gax "^3.3.0"
+    google-gax "^3.5.2"
     on-finished "^2.3.0"
     pumpify "^2.0.1"
     stream-events "^1.0.5"
@@ -3450,7 +3450,7 @@ google-auth-library@^8.0.2:
     jws "^4.0.0"
     lru-cache "^6.0.0"
 
-google-gax@^3.3.0:
+google-gax@^3.5.2:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/google-gax/-/google-gax-3.5.2.tgz#7c3ad61dbf366a55527b803caead276668b160d8"
   integrity sha512-AyP53w0gHcWlzxm+jSgqCR3Xu4Ld7EpSjhtNBnNhzwwWaIUyphH9kBGNIEH+i4UGkTUXOY29K/Re8EiAvkBRGw==
