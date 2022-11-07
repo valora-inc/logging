@@ -346,7 +346,7 @@
     "@google-cloud/logging" "^10.2.2"
     google-auth-library "^8.0.2"
 
-"@google-cloud/logging@^10.2.2", "@google-cloud/logging@^10.2.3":
+"@google-cloud/logging@^10.2.2", "@google-cloud/logging@^10.3.0":
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-10.3.0.tgz#1ea51db69f1bd0d3edbb5f527b3453f272c2aefb"
   integrity sha512-3QNSMci/8mmvLs4Iyb6Z/pFT/lJCDPWGWSRx08+Yi254xpva32pOU0grzgbPYls8SFhDWUQgYr9DGZg+IH0kEQ==
