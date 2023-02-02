@@ -346,10 +346,10 @@
     "@google-cloud/logging" "^10.2.2"
     google-auth-library "^8.0.2"
 
-"@google-cloud/logging@^10.2.2", "@google-cloud/logging@^10.3.3":
-  version "10.3.3"
-  resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-10.3.3.tgz#ea48cd55bbb1c7d4e61838c9d2b494310308b9d2"
-  integrity sha512-eCw2vZXAnfMKDKWf5zrm3+GO50W3DZJxi/+rNyH+IlBvfPUyQd75O/XfLzg3AfA6O3g562iE0eMmpoug7WABtQ==
+"@google-cloud/logging@^10.2.2", "@google-cloud/logging@^10.4.0":
+  version "10.4.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-10.4.0.tgz#3fdacfc4dfc17afb73bc2a19baf70cf2668401a9"
+  integrity sha512-tI2M+tTjVWRbi8KokJklpTxTqzkgZ6R4M4OuvQhTw/4tmh0HaTvKd/RYI6wQGrSw2a3j98kWBD3ryY5TcPRqog==
   dependencies:
     "@google-cloud/common" "^4.0.0"
     "@google-cloud/paginator" "^4.0.0"
