@@ -487,18 +487,17 @@ describe('logger serialization', () => {
         })
         .catch((err) => err)
 
-      // Override the stack so it's the same everywhere
-      const projectRoot = path.resolve(__dirname, '..')
-      gotError.stack = gotError.stack?.replaceAll(
-        projectRoot,
-        '/Users/flarf/src/github.com/valora-inc/logging',
-      )
-
       logger.error({ err: gotError }, 'We have a got error')
 
       expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
       expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
-        DEFAULT_PROPERTY_MATCHER,
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
+          },
+        },
         `
         {
           "err": {
@@ -518,17 +517,7 @@ describe('logger serialization', () => {
               "method": "POST",
               "url": "http://127.0.0.1:12345/",
             },
-            "stack": "RequestError: connect ECONNREFUSED 127.0.0.1:12345
-            at ClientRequest.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/core/index.js:970:111)
-            at Object.onceWrapper (node:events:628:26)
-            at ClientRequest.emit (node:events:525:35)
-            at ClientRequest.origin.emit (/Users/flarf/src/github.com/valora-inc/logging/node_modules/@szmarczak/http-timer/dist/source/index.js:43:20)
-            at Socket.socketErrorListener (node:_http_client:494:9)
-            at Socket.emit (node:events:513:28)
-            at emitErrorNT (node:internal/streams/destroy:157:8)
-            at emitErrorCloseNT (node:internal/streams/destroy:122:3)
-            at processTicksAndRejections (node:internal/process/task_queues:83:21)
-            at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1278:16)",
+            "stack": Any<String>,
           },
           "hostname": Any<String>,
           "level": 50,
@@ -553,13 +542,6 @@ describe('logger serialization', () => {
         })
         .catch((err) => err)
 
-      // Override the stack so it's the same everywhere
-      const projectRoot = path.resolve(__dirname, '..')
-      gotError.stack = gotError.stack?.replace(
-        projectRoot,
-        '/Users/flarf/src/github.com/valora-inc/logging',
-      )
-
       logger.error({ err: gotError }, 'We have a got error')
 
       expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
@@ -567,6 +549,8 @@ describe('logger serialization', () => {
         {
           ...DEFAULT_PROPERTY_MATCHER,
           err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
             response: {
               headers: {
                 date: expect.any(String),
@@ -615,9 +599,7 @@ describe('logger serialization', () => {
               },
               "statusCode": 404,
             },
-            "stack": "HTTPError: Response code 404 (Not Found)
-            at Request.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/as-promise/index.js:118:42)
-            at processTicksAndRejections (node:internal/process/task_queues:96:5)",
+            "stack": Any<String>,
           },
           "hostname": Any<String>,
           "level": 50,
