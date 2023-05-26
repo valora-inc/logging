@@ -3,6 +3,8 @@ import express from 'express'
 import request from 'supertest'
 import { createLogger, createLoggingMiddleware } from './logging'
 import MockDate from 'mockdate'
+import got from 'got'
+import path from 'path'
 
 MockDate.set(new Date('2022-10-18T23:36:07.071Z'))
 
@@ -456,5 +458,175 @@ describe('logging middleware', () => {
     const logRecord = spyLoggerEmit.mock.calls[1][0]
     expect(logRecord).not.toHaveProperty('httpRequest')
     expect(logRecord).toHaveProperty('req')
+  })
+})
+
+describe('logger serialization', () => {
+  let listeningServer: any
+
+  afterEach((done) => {
+    if (!listeningServer) {
+      return done()
+    }
+
+    listeningServer?.close(done)
+    listeningServer = undefined
+  })
+
+  describe('got library errors', () => {
+    it('should add request details when the request fails to connect', async () => {
+      const logger = createLogger()
+      const gotError = await got
+        // This will fail because there's no server listening
+        .post('http://localhost:12345', {
+          json: {
+            foo: 'bar',
+          },
+        })
+        .catch((err) => err)
+
+      // Override the stack so it's the same everywhere
+      const projectRoot = path.resolve(__dirname, '..')
+      gotError.stack = gotError.stack?.replace(
+        projectRoot,
+        '/Users/flarf/src/github.com/valora-inc/logging',
+      )
+
+      logger.error({ err: gotError }, 'We have a got error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        DEFAULT_PROPERTY_MATCHER,
+        `
+        {
+          "err": {
+            "code": "ECONNREFUSED",
+            "message": "connect ECONNREFUSED ::1:12345",
+            "name": "RequestError",
+            "request": {
+              "body": {
+                "foo": "bar",
+              },
+              "headers": {
+                "accept-encoding": "gzip, deflate, br",
+                "content-length": "13",
+                "content-type": "application/json",
+                "user-agent": "got (https://github.com/sindresorhus/got)",
+              },
+              "method": "POST",
+              "url": "http://localhost:12345/",
+            },
+            "stack": "RequestError: connect ECONNREFUSED ::1:12345
+            at ClientRequest.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/core/index.js:970:111)
+            at Object.onceWrapper (node:events:628:26)
+            at ClientRequest.emit (node:events:525:35)
+            at ClientRequest.origin.emit (/Users/jean/src/github.com/valora-inc/logging/node_modules/@szmarczak/http-timer/dist/source/index.js:43:20)
+            at Socket.socketErrorListener (node:_http_client:502:9)
+            at Socket.emit (node:events:513:28)
+            at emitErrorNT (node:internal/streams/destroy:151:8)
+            at emitErrorCloseNT (node:internal/streams/destroy:116:3)
+            at processTicksAndRejections (node:internal/process/task_queues:82:21)
+            at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1494:16)",
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have a got error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
+
+    it('should add request and response details when the server response is not successful', async () => {
+      listeningServer = express().listen(42424)
+      const logger = createLogger()
+      const gotError = await got
+        .post(`http://127.0.0.1:42424/does-not-exist`, {
+          json: {
+            foo: 'bar',
+          },
+        })
+        .catch((err) => err)
+
+      // Override the stack so it's the same everywhere
+      const projectRoot = path.resolve(__dirname, '..')
+      gotError.stack = gotError.stack?.replace(
+        projectRoot,
+        '/Users/flarf/src/github.com/valora-inc/logging',
+      )
+
+      logger.error({ err: gotError }, 'We have a got error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            response: {
+              headers: {
+                date: expect.any(String),
+              },
+            },
+          },
+        },
+        `
+        {
+          "err": {
+            "code": "ERR_NON_2XX_3XX_RESPONSE",
+            "message": "Response code 404 (Not Found)",
+            "name": "HTTPError",
+            "request": {
+              "body": {
+                "foo": "bar",
+              },
+              "headers": {
+                "accept-encoding": "gzip, deflate, br",
+                "content-length": "13",
+                "content-type": "application/json",
+                "user-agent": "got (https://github.com/sindresorhus/got)",
+              },
+              "method": "POST",
+              "url": "http://127.0.0.1:42424/does-not-exist",
+            },
+            "response": {
+              "body": "<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <title>Error</title>
+        </head>
+        <body>
+        <pre>Cannot POST /does-not-exist</pre>
+        </body>
+        </html>
+        ",
+              "headers": {
+                "connection": "close",
+                "content-length": "154",
+                "content-security-policy": "default-src 'none'",
+                "content-type": "text/html; charset=utf-8",
+                "date": Any<String>,
+                "x-content-type-options": "nosniff",
+              },
+              "statusCode": 404,
+            },
+            "stack": "HTTPError: Response code 404 (Not Found)
+            at Request.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/as-promise/index.js:118:42)
+            at processTicksAndRejections (node:internal/process/task_queues:95:5)",
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have a got error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
   })
 })
