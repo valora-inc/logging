@@ -480,7 +480,7 @@ describe('logger serialization', () => {
       const logger = createLogger()
       const gotError = await got
         // This will fail because there's no server listening
-        .post('http://localhost:12345', {
+        .post('http://127.0.0.1:12345', {
           json: {
             foo: 'bar',
           },
@@ -503,7 +503,7 @@ describe('logger serialization', () => {
         {
           "err": {
             "code": "ECONNREFUSED",
-            "message": "connect ECONNREFUSED ::1:12345",
+            "message": "connect ECONNREFUSED 127.0.0.1:12345",
             "name": "RequestError",
             "request": {
               "body": {
@@ -516,9 +516,9 @@ describe('logger serialization', () => {
                 "user-agent": "got (https://github.com/sindresorhus/got)",
               },
               "method": "POST",
-              "url": "http://localhost:12345/",
+              "url": "http://127.0.0.1:12345/",
             },
-            "stack": "RequestError: connect ECONNREFUSED ::1:12345
+            "stack": "RequestError: connect ECONNREFUSED 127.0.0.1:12345
             at ClientRequest.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/core/index.js:970:111)
             at Object.onceWrapper (node:events:628:26)
             at ClientRequest.emit (node:events:525:35)
