@@ -4,7 +4,6 @@ import request from 'supertest'
 import { createLogger, createLoggingMiddleware } from './logging'
 import MockDate from 'mockdate'
 import got from 'got'
-import path from 'path'
 import { promisify } from 'util'
 
 MockDate.set(new Date('2022-10-18T23:36:07.071Z'))
