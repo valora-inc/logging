@@ -174,7 +174,7 @@ export function createLoggingMiddleware({
   }
 }
 
-// Adapts the got options to a format that can be by the default request serializer
+// Adapt the got options to a format that can be used by the default request serializer
 // See https://github.com/sindresorhus/got/blob/2b1482ca847867cbf24abde4d68e8063611e50d1/source/core/index.ts#L312
 function makeFakeRequestFromGotOptions(gotOptions: any) {
   if (!gotOptions || !gotOptions.url) {
