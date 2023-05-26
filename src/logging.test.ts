@@ -520,15 +520,15 @@ describe('logger serialization', () => {
             },
             "stack": "RequestError: connect ECONNREFUSED 127.0.0.1:12345
             at ClientRequest.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/core/index.js:970:111)
-            at Object.onceWrapper (node:events:628:26)
-            at ClientRequest.emit (node:events:525:35)
+            at Object.onceWrapper (node:events:510:26)
+            at ClientRequest.emit (node:events:402:35)
             at ClientRequest.origin.emit (/Users/flarf/src/github.com/valora-inc/logging/node_modules/@szmarczak/http-timer/dist/source/index.js:43:20)
-            at Socket.socketErrorListener (node:_http_client:502:9)
-            at Socket.emit (node:events:513:28)
-            at emitErrorNT (node:internal/streams/destroy:151:8)
-            at emitErrorCloseNT (node:internal/streams/destroy:116:3)
-            at processTicksAndRejections (node:internal/process/task_queues:82:21)
-            at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1494:16)",
+            at Socket.socketErrorListener (node:_http_client:447:9)
+            at Socket.emit (node:events:390:28)
+            at emitErrorNT (node:internal/streams/destroy:157:8)
+            at emitErrorCloseNT (node:internal/streams/destroy:122:3)
+            at processTicksAndRejections (node:internal/process/task_queues:83:21)
+            at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1161:16)",
           },
           "hostname": Any<String>,
           "level": 50,
@@ -617,7 +617,7 @@ describe('logger serialization', () => {
             },
             "stack": "HTTPError: Response code 404 (Not Found)
             at Request.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/as-promise/index.js:118:42)
-            at processTicksAndRejections (node:internal/process/task_queues:95:5)",
+            at processTicksAndRejections (node:internal/process/task_queues:96:5)",
           },
           "hostname": Any<String>,
           "level": 50,
