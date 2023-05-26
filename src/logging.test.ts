@@ -5,6 +5,7 @@ import { createLogger, createLoggingMiddleware } from './logging'
 import MockDate from 'mockdate'
 import got from 'got'
 import path from 'path'
+import { promisify } from 'util'
 
 MockDate.set(new Date('2022-10-18T23:36:07.071Z'))
 
@@ -464,12 +465,13 @@ describe('logging middleware', () => {
 describe('logger serialization', () => {
   let listeningServer: any
 
-  afterEach((done) => {
+  afterEach(async () => {
     if (!listeningServer) {
-      return done()
+      return
     }
 
-    listeningServer?.close(done)
+    const close = promisify(listeningServer.close.bind(listeningServer))
+    await close()
     listeningServer = undefined
   })
 
@@ -487,7 +489,7 @@ describe('logger serialization', () => {
 
       // Override the stack so it's the same everywhere
       const projectRoot = path.resolve(__dirname, '..')
-      gotError.stack = gotError.stack?.replace(
+      gotError.stack = gotError.stack?.replaceAll(
         projectRoot,
         '/Users/flarf/src/github.com/valora-inc/logging',
       )
@@ -520,7 +522,7 @@ describe('logger serialization', () => {
             at ClientRequest.<anonymous> (/Users/flarf/src/github.com/valora-inc/logging/node_modules/got/dist/source/core/index.js:970:111)
             at Object.onceWrapper (node:events:628:26)
             at ClientRequest.emit (node:events:525:35)
-            at ClientRequest.origin.emit (/Users/jean/src/github.com/valora-inc/logging/node_modules/@szmarczak/http-timer/dist/source/index.js:43:20)
+            at ClientRequest.origin.emit (/Users/flarf/src/github.com/valora-inc/logging/node_modules/@szmarczak/http-timer/dist/source/index.js:43:20)
             at Socket.socketErrorListener (node:_http_client:502:9)
             at Socket.emit (node:events:513:28)
             at emitErrorNT (node:internal/streams/destroy:151:8)
