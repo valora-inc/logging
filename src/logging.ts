@@ -174,12 +174,28 @@ export function createLoggingMiddleware({
   }
 }
 
+// Simple heuristic to check if the error is from got
+// See https://github.com/sindresorhus/got/blob/2b1482ca847867cbf24abde4d68e8063611e50d1/source/core/index.ts#L312
+function isGotError(err: any) {
+  return err.options && err.options.url
+}
+
+// Adapt the got options to a format that can be used by the default request serializer
+function makeFakeRequestFromGotOptions(gotOptions: any) {
+  return {
+    method: gotOptions.method,
+    url: gotOptions.url,
+    headers: gotOptions.headers,
+    body: gotOptions.body || gotOptions.json,
+  }
+}
+
 // Similar to the stdSerializers in bunyan, but with a few extra fields (query and body mostly)
 export function createDetailedRequestSerializers() {
-  const serializers: Logger.Serializers = { err: Logger.stdSerializers.err }
+  const serializers: Logger.Serializers = {}
 
   serializers.req = (req: any) => {
-    if (!req || !req.connection) {
+    if (!req || !req.method) {
       return req
     }
     return {
@@ -190,18 +206,44 @@ export function createDetailedRequestSerializers() {
       query: req.query,
       body: req.body,
       headers: req.headers,
-      remoteAddress: req.connection.remoteAddress,
-      remotePort: req.connection.remotePort,
+      remoteAddress: req.connection?.remoteAddress,
+      remotePort: req.connection?.remotePort,
     }
   }
 
-  serializers.res = (res: any) => {
+  function responseSerializer(res: any, includeBody?: boolean) {
     if (!res || !res.statusCode) {
       return res
     }
     return {
       statusCode: res.statusCode,
       header: res._header,
+      headers: res.headers,
+      ...(includeBody ? { body: res.body } : undefined),
+    }
+  }
+
+  serializers.res = responseSerializer
+
+  serializers.err = (err: any) => {
+    if (!err || !err.stack) {
+      return err
+    }
+
+    const result = Logger.stdSerializers.err(err)
+
+    if (!isGotError(err)) {
+      return result
+    }
+
+    const response = err.response
+    const request = makeFakeRequestFromGotOptions(err.options)
+
+    // Add the request and response to the log record, when the error is from the got library
+    return {
+      ...result,
+      request: serializers.req(request),
+      response: responseSerializer(response, true),
     }
   }
 

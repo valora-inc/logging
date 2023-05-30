@@ -3,6 +3,10 @@ import express from 'express'
 import request from 'supertest'
 import { createLogger, createLoggingMiddleware } from './logging'
 import MockDate from 'mockdate'
+import got from 'got'
+import axios from 'axios'
+import nodeFetch from 'node-fetch'
+import { promisify } from 'util'
 
 MockDate.set(new Date('2022-10-18T23:36:07.071Z'))
 
@@ -456,5 +460,349 @@ describe('logging middleware', () => {
     const logRecord = spyLoggerEmit.mock.calls[1][0]
     expect(logRecord).not.toHaveProperty('httpRequest')
     expect(logRecord).toHaveProperty('req')
+  })
+})
+
+describe('logger serialization', () => {
+  let listeningServer: any
+
+  afterEach(async () => {
+    if (!listeningServer) {
+      return
+    }
+
+    const close = promisify(listeningServer.close.bind(listeningServer))
+    await close()
+    listeningServer = undefined
+  })
+
+  it('should work with an empty error object', async () => {
+    const logger = createLogger()
+
+    logger.error({ err: {} }, 'We have an empty error object')
+
+    expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+    expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+      { ...DEFAULT_PROPERTY_MATCHER },
+      `
+      {
+        "err": {},
+        "hostname": Any<String>,
+        "level": 50,
+        "msg": "We have an empty error object",
+        "name": "default",
+        "pid": Any<Number>,
+        "time": 2022-10-18T23:36:07.071Z,
+        "v": 0,
+      }
+    `,
+    )
+  })
+
+  describe('got library errors', () => {
+    it('should add request details when the request fails to connect', async () => {
+      const logger = createLogger()
+      const gotError = await got
+        // This will fail because there's no server listening
+        .post('http://127.0.0.1:12345', {
+          json: {
+            foo: 'bar',
+          },
+        })
+        .catch((err) => err)
+
+      logger.error({ err: gotError }, 'We have a got error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
+          },
+        },
+        `
+        {
+          "err": {
+            "code": "ECONNREFUSED",
+            "message": "connect ECONNREFUSED 127.0.0.1:12345",
+            "name": "RequestError",
+            "request": {
+              "body": {
+                "foo": "bar",
+              },
+              "headers": {
+                "accept-encoding": "gzip, deflate, br",
+                "content-length": "13",
+                "content-type": "application/json",
+                "user-agent": "got (https://github.com/sindresorhus/got)",
+              },
+              "method": "POST",
+              "url": "http://127.0.0.1:12345/",
+            },
+            "stack": Any<String>,
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have a got error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
+
+    it('should add request and response details when the server response is not successful', async () => {
+      listeningServer = express().listen(42424)
+      const logger = createLogger()
+      const gotError = await got
+        .post(`http://127.0.0.1:42424/does-not-exist`, {
+          json: {
+            foo: 'bar',
+          },
+        })
+        .catch((err) => err)
+
+      logger.error({ err: gotError }, 'We have a got error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
+            response: {
+              headers: {
+                date: expect.any(String),
+              },
+            },
+          },
+        },
+        `
+        {
+          "err": {
+            "code": "ERR_NON_2XX_3XX_RESPONSE",
+            "message": "Response code 404 (Not Found)",
+            "name": "HTTPError",
+            "request": {
+              "body": {
+                "foo": "bar",
+              },
+              "headers": {
+                "accept-encoding": "gzip, deflate, br",
+                "content-length": "13",
+                "content-type": "application/json",
+                "user-agent": "got (https://github.com/sindresorhus/got)",
+              },
+              "method": "POST",
+              "url": "http://127.0.0.1:42424/does-not-exist",
+            },
+            "response": {
+              "body": "<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <title>Error</title>
+        </head>
+        <body>
+        <pre>Cannot POST /does-not-exist</pre>
+        </body>
+        </html>
+        ",
+              "headers": {
+                "connection": "close",
+                "content-length": "154",
+                "content-security-policy": "default-src 'none'",
+                "content-type": "text/html; charset=utf-8",
+                "date": Any<String>,
+                "x-content-type-options": "nosniff",
+              },
+              "statusCode": 404,
+            },
+            "stack": Any<String>,
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have a got error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
+  })
+
+  describe('axios library errors', () => {
+    // TODO: support request/response details for axios
+    it('should work when the request fails to connect', async () => {
+      const logger = createLogger()
+      const axiosError = await axios
+        // This will fail because there's no server listening
+        .post('http://127.0.0.1:12345', {
+          foo: 'bar',
+        })
+        .catch((err) => err)
+
+      logger.error({ err: axiosError }, 'We have an axios error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
+          },
+        },
+        `
+        {
+          "err": {
+            "code": "ECONNREFUSED",
+            "message": "connect ECONNREFUSED 127.0.0.1:12345",
+            "name": "Error",
+            "stack": Any<String>,
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have an axios error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
+
+    // TODO: support request/response details for axios
+    it('should work when the server response is not successful', async () => {
+      listeningServer = express().listen(42424)
+      const logger = createLogger()
+      const axiosError = await axios
+        .post(`http://127.0.0.1:42424/does-not-exist`, {
+          foo: 'bar',
+        })
+        .catch((err) => err)
+
+      logger.error({ err: axiosError }, 'We have an axios error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
+          },
+        },
+        `
+        {
+          "err": {
+            "code": "ERR_BAD_REQUEST",
+            "message": "Request failed with status code 404",
+            "name": "AxiosError",
+            "stack": Any<String>,
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have an axios error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
+  })
+
+  describe('node-fetch library errors', () => {
+    // TODO: support request/response details for node-fetch
+    it('should work when the request fails to connect', async () => {
+      const logger = createLogger()
+      const nodeFetchError = await nodeFetch(
+        // This will fail because there's no server listening
+        'http://127.0.0.1:12345',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            foo: 'bar',
+          }),
+        },
+      ).catch((err) => err)
+
+      logger.error({ err: nodeFetchError }, 'We have a node-fetch error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        {
+          ...DEFAULT_PROPERTY_MATCHER,
+          err: {
+            // Ignore stack as it's changes between Node versions
+            stack: expect.any(String),
+          },
+        },
+        `
+        {
+          "err": {
+            "code": "ECONNREFUSED",
+            "message": "request to http://127.0.0.1:12345/ failed, reason: connect ECONNREFUSED 127.0.0.1:12345",
+            "name": "FetchError",
+            "stack": Any<String>,
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have a node-fetch error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
+
+    // TODO: support request/response details for node-fetch
+    it('should work when the server response is not successful', async () => {
+      listeningServer = express().listen(42424)
+      const logger = createLogger()
+      const nodeFetchError = await nodeFetch(
+        `http://127.0.0.1:42424/does-not-exist`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            foo: 'bar',
+          }),
+        },
+      ).catch((err) => err)
+
+      logger.error({ err: nodeFetchError }, 'We have a node-fetch error')
+
+      expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+      expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+        { ...DEFAULT_PROPERTY_MATCHER },
+        `
+        {
+          "err": {
+            "size": 0,
+            "timeout": 0,
+          },
+          "hostname": Any<String>,
+          "level": 50,
+          "msg": "We have a node-fetch error",
+          "name": "default",
+          "pid": Any<Number>,
+          "time": 2022-10-18T23:36:07.071Z,
+          "v": 0,
+        }
+      `,
+      )
+    })
   })
 })
