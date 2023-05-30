@@ -174,13 +174,14 @@ export function createLoggingMiddleware({
   }
 }
 
-// Adapt the got options to a format that can be used by the default request serializer
+// Simple heuristic to check if the error is from got
 // See https://github.com/sindresorhus/got/blob/2b1482ca847867cbf24abde4d68e8063611e50d1/source/core/index.ts#L312
-function makeFakeRequestFromGotOptions(gotOptions: any) {
-  if (!gotOptions || !gotOptions.url) {
-    return undefined
-  }
+function isGotError(err: any) {
+  return err.options && err.options.url
+}
 
+// Adapt the got options to a format that can be used by the default request serializer
+function makeFakeRequestFromGotOptions(gotOptions: any) {
   return {
     method: gotOptions.method,
     url: gotOptions.url,
@@ -231,11 +232,12 @@ export function createDetailedRequestSerializers() {
 
     const result = Logger.stdSerializers.err(err)
 
-    const response = err.response
-    const request = makeFakeRequestFromGotOptions(err.options)
-    if (!response && !request) {
+    if (!isGotError(err)) {
       return result
     }
+
+    const response = err.response
+    const request = makeFakeRequestFromGotOptions(err.options)
 
     // Add the request and response to the log record, when the error is from the got library
     return {
