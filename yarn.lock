@@ -1279,10 +1279,10 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/fast-redact@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/@types/fast-redact/-/fast-redact-3.0.3.tgz#7a1daa13a96bb523441938d9c30bb5d7ae39ec4f"
-  integrity sha512-NsxshmEC4C98Wdq0sdywEKtjNirvYKOB0ELQWN647cNRET4Hvk7pTLFyb2opbHK4pg1X8BjgwKF39xEqE9hRXQ==
+"@types/fast-redact@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@types/fast-redact/-/fast-redact-3.0.4.tgz#7f7cdf30efd02ae6f9360f3361ee9a7a8b9a748d"
+  integrity sha512-tgGJaXucrCH4Yx2l/AI6e/JQksZhKGIQsVwBMTh+nxUhQDv5tXScTs5DHTw+qSKDXnHL2dTAh1e2rd5pcFQyNQ==
 
 "@types/glob@~7.2.0":
   version "7.2.0"
