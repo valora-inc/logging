@@ -47,7 +47,7 @@
     "@types/fast-redact": "^3.0.4",
     "bunyan": "^1.8.15",
     "bunyan-prettystream": "^0.1.3",
-    "fast-redact": "^3.3.0"
+    "fast-redact": "^3.4.0"
   },
   "devDependencies": {
     "@types/bunyan-prettystream": "^0.1.32",
