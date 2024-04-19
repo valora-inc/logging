@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@google-cloud/logging": "^11.0.0",
-    "@google-cloud/logging-bunyan": "^5.0.1",
+    "@google-cloud/logging-bunyan": "^5.1.0",
     "@types/bunyan": "^1.8.11",
     "@types/fast-redact": "^3.0.4",
     "bunyan": "^1.8.15",
