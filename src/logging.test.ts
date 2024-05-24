@@ -177,6 +177,37 @@ describe('logger', () => {
     `,
     )
   })
+
+  it('should transfrom BigInt values to strings', async () => {
+    const logger = createLogger()
+    logger.info(
+      { a: { b: { c: 10n, d: 'Text' }, e: 20n }, f: 30n },
+      'I have BigInt',
+    )
+    expect(spyLoggerEmit).toHaveBeenCalledTimes(1)
+    expect(spyLoggerEmit.mock.calls[0][0]).toMatchInlineSnapshot(
+      DEFAULT_PROPERTY_MATCHER,
+      `
+      {
+        "a": {
+          "b": {
+            "c": "10",
+            "d": "Text",
+          },
+          "e": "20",
+        },
+        "f": "30",
+        "hostname": Any<String>,
+        "level": 30,
+        "msg": "I have BigInt",
+        "name": "default",
+        "pid": Any<Number>,
+        "time": 2022-10-18T23:36:07.071Z,
+        "v": 0,
+      }
+    `,
+    )
+  })
 })
 
 describe('logging middleware', () => {
