@@ -89,9 +89,10 @@ export function createLogger({
       // This makes the redact action stable when calling `logger.info({ req })` multiple times
       // i.e. the original `req` object is not mutated
       // This assumes all fields are serializable, which they should at this point
+      // BigInt values are transformed to strings during serialization
       Object.assign(
         logRecord,
-        redact(JSON.parse(globalReplace(JSON.stringify(rest)))),
+        redact(JSON.parse(globalReplace(JSON.stringify(rest, bigIntReplacer)))),
       )
 
       // Call the original _emit
@@ -248,4 +249,8 @@ export function createDetailedRequestSerializers() {
   }
 
   return serializers
+}
+
+function bigIntReplacer(_: unknown, value: unknown) {
+  return typeof value === 'bigint' ? value.toString() : value
 }
