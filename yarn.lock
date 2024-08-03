@@ -368,15 +368,16 @@
     "@google-cloud/logging" "^11.0.0"
     google-auth-library "^9.0.0"
 
-"@google-cloud/logging@^11.0.0", "@google-cloud/logging@^11.1.0":
-  version "11.1.0"
-  resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-11.1.0.tgz#79e1f05a27a596d154ab475b167b2d98e29e1457"
-  integrity sha512-S3Zsd+HZxIdZgDZByJ+2GaSQ8rA5OLfdZoZ9Ys1iSZ4HRIhO9ZxlXbmGZgGK9JJ2GaXp7Rux4K4LpkqoYPKnEg==
+"@google-cloud/logging@^11.0.0", "@google-cloud/logging@^11.2.0":
+  version "11.2.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/logging/-/logging-11.2.0.tgz#d282f136467cc4500932f1fa6d4fe58325eb2db2"
+  integrity sha512-Ma94jvuoMpbgNniwtelOt8w82hxK62FuOXZonEv0Hyk3B+/YVuLG/SWNyY9yMso/RXnPEc1fP2qo9kDrjf/b2w==
   dependencies:
     "@google-cloud/common" "^5.0.0"
     "@google-cloud/paginator" "^5.0.0"
     "@google-cloud/projectify" "^4.0.0"
     "@google-cloud/promisify" "^4.0.0"
+    "@opentelemetry/api" "^1.7.0"
     arrify "^2.0.1"
     dot-prop "^6.0.0"
     eventid "^2.0.0"
@@ -998,6 +999,11 @@
   integrity sha512-65/TPpOJP1i3K4lBJMnWqPUJ6zuOtzhtagDvydAWbEXpbFYA0oMKKyLb95NFZZP0lSh/4b6K+DQlzvYQJQQePg==
   dependencies:
     "@octokit/openapi-types" "^14.0.0"
+
+"@opentelemetry/api@^1.7.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.0.tgz#d03eba68273dc0f7509e2a3d5cba21eae10379fe"
+  integrity sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
