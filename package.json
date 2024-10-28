@@ -52,7 +52,7 @@
   "devDependencies": {
     "@types/bunyan-prettystream": "^0.1.35",
     "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.13",
+    "@types/jest": "^29.5.14",
     "@types/node-fetch": "^2.6.11",
     "@types/shelljs": "^0.8.15",
     "@types/supertest": "^6.0.2",
