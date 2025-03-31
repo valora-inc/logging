@@ -55,7 +55,7 @@
     "@types/jest": "^29.5.14",
     "@types/node-fetch": "^2.6.12",
     "@types/shelljs": "^0.8.15",
-    "@types/supertest": "^6.0.2",
+    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@valora/eslint-config-typescript": "^1.0.2",
     "@valora/prettier-config": "^0.0.1",
@@ -76,7 +76,7 @@
     "semantic-release": "^19.0.5",
     "shelljs": "^0.8.5",
     "supertest": "^7.1.0",
-    "ts-jest": "^29.2.6",
+    "ts-jest": "^29.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },
