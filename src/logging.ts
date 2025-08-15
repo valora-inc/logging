@@ -13,6 +13,7 @@ import {
 import { ServerResponse } from 'http'
 import { ServerRequest } from '@google-cloud/logging/build/src/utils/http-request'
 import fastRedact from 'fast-redact'
+import type { RedactOptions } from 'fast-redact'
 
 // GAE_SERVICE is the service name of the App Engine service:
 //   https://cloud.google.com/appengine/docs/standard/nodejs/runtime#environment_variables
@@ -24,7 +25,7 @@ function getGoogleServiceName() {
   return process.env.GAE_SERVICE || process.env.K_SERVICE
 }
 
-interface ExtendedRedactOptions extends fastRedact.RedactOptions {
+interface ExtendedRedactOptions extends RedactOptions {
   // Allows to globally replace sensitive patterns
   // WARNING: the value is JSON.stringified before being passed to this function
   // and will be JSON.parse'd after
