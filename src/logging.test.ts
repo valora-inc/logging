@@ -611,6 +611,8 @@ describe('logger serialization', () => {
                 date: expect.any(String),
                 // Ignore connection-related headers as they can vary
                 connection: expect.any(String),
+                // keep-alive header is optional (platform-dependent)
+                'keep-alive': expect.anything(),
               },
             },
           },
@@ -652,7 +654,7 @@ describe('logger serialization', () => {
                 "content-security-policy": "default-src 'none'",
                 "content-type": "text/html; charset=utf-8",
                 "date": Any<String>,
-                "keep-alive": "timeout=5",
+                "keep-alive": Anything,
                 "x-content-type-options": "nosniff",
               },
               "statusCode": 404,
@@ -762,6 +764,8 @@ describe('logger serialization', () => {
                 date: expect.any(String),
                 // Ignore connection-related headers as they can vary
                 connection: expect.any(String),
+                // keep-alive header is optional (platform-dependent)
+                'keep-alive': expect.anything(),
               },
             },
           },
@@ -804,7 +808,7 @@ describe('logger serialization', () => {
                 "content-security-policy": "default-src 'none'",
                 "content-type": "text/html; charset=utf-8",
                 "date": Any<String>,
-                "keep-alive": "timeout=5",
+                "keep-alive": Anything,
                 "x-content-type-options": "nosniff",
               },
               "statusCode": 404,
