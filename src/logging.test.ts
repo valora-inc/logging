@@ -609,6 +609,8 @@ describe('logger serialization', () => {
             response: {
               headers: {
                 date: expect.any(String),
+                // Ignore connection-related headers as they can vary
+                connection: expect.any(String),
               },
             },
           },
@@ -645,11 +647,12 @@ describe('logger serialization', () => {
         </html>
         ",
               "headers": {
-                "connection": "close",
+                "connection": Any<String>,
                 "content-length": "154",
                 "content-security-policy": "default-src 'none'",
                 "content-type": "text/html; charset=utf-8",
                 "date": Any<String>,
+                "keep-alive": "timeout=5",
                 "x-content-type-options": "nosniff",
               },
               "statusCode": 404,
@@ -670,8 +673,7 @@ describe('logger serialization', () => {
   })
 
   describe('axios library errors', () => {
-    // TODO: support request/response details for axios
-    it('should work when the request fails to connect', async () => {
+    it('should add request details when the request fails to connect', async () => {
       const logger = createLogger()
       const axiosError = await axios
         // This will fail because there's no server listening
@@ -689,6 +691,12 @@ describe('logger serialization', () => {
           err: {
             // Ignore stack as it's changes between Node versions
             stack: expect.any(String),
+            request: {
+              headers: {
+                // Ignore User-Agent as it changes between axios versions
+                'User-Agent': expect.any(String),
+              },
+            },
           },
         },
         `
@@ -697,6 +705,20 @@ describe('logger serialization', () => {
             "code": "ECONNREFUSED",
             "message": "connect ECONNREFUSED 127.0.0.1:12345",
             "name": "Error",
+            "request": {
+              "body": {
+                "foo": "bar",
+              },
+              "headers": {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, compress, deflate, br",
+                "Content-Length": "13",
+                "Content-Type": "application/json",
+                "User-Agent": Any<String>,
+              },
+              "method": "post",
+              "url": "http://127.0.0.1:12345",
+            },
             "stack": Any<String>,
           },
           "hostname": Any<String>,
@@ -711,12 +733,11 @@ describe('logger serialization', () => {
       )
     })
 
-    // TODO: support request/response details for axios
-    it('should work when the server response is not successful', async () => {
-      listeningServer = express().listen(42424)
+    it('should add request and response details when the server response is not successful', async () => {
+      listeningServer = express().listen(42425)
       const logger = createLogger()
       const axiosError = await axios
-        .post(`http://127.0.0.1:42424/does-not-exist`, {
+        .post(`http://127.0.0.1:42425/does-not-exist`, {
           foo: 'bar',
         })
         .catch((err) => err)
@@ -730,6 +751,19 @@ describe('logger serialization', () => {
           err: {
             // Ignore stack as it's changes between Node versions
             stack: expect.any(String),
+            request: {
+              headers: {
+                // Ignore User-Agent as it changes between axios versions
+                'User-Agent': expect.any(String),
+              },
+            },
+            response: {
+              headers: {
+                date: expect.any(String),
+                // Ignore connection-related headers as they can vary
+                connection: expect.any(String),
+              },
+            },
           },
         },
         `
@@ -738,6 +772,43 @@ describe('logger serialization', () => {
             "code": "ERR_BAD_REQUEST",
             "message": "Request failed with status code 404",
             "name": "AxiosError",
+            "request": {
+              "body": {
+                "foo": "bar",
+              },
+              "headers": {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, compress, deflate, br",
+                "Content-Length": "13",
+                "Content-Type": "application/json",
+                "User-Agent": Any<String>,
+              },
+              "method": "post",
+              "url": "http://127.0.0.1:42425/does-not-exist",
+            },
+            "response": {
+              "body": "<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <title>Error</title>
+        </head>
+        <body>
+        <pre>Cannot POST /does-not-exist</pre>
+        </body>
+        </html>
+        ",
+              "headers": {
+                "connection": Any<String>,
+                "content-length": "154",
+                "content-security-policy": "default-src 'none'",
+                "content-type": "text/html; charset=utf-8",
+                "date": Any<String>,
+                "keep-alive": "timeout=5",
+                "x-content-type-options": "nosniff",
+              },
+              "statusCode": 404,
+            },
             "stack": Any<String>,
           },
           "hostname": Any<String>,

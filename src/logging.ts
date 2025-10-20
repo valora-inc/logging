@@ -192,6 +192,44 @@ function makeFakeRequestFromGotOptions(gotOptions: any) {
   }
 }
 
+// Simple heuristic to check if the error is from axios
+// See https://axios-http.com/docs/handling_errors
+function isAxiosError(err: any) {
+  return err.isAxiosError && err.config
+}
+
+// Adapt the axios config to a format that can be used by the default request serializer
+function makeFakeRequestFromAxiosConfig(axiosConfig: any) {
+  // Try to parse the body if it's a JSON string
+  let body = axiosConfig.data
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body)
+    } catch {
+      // If it's not valid JSON, keep it as a string
+    }
+  }
+
+  return {
+    method: axiosConfig.method,
+    url: axiosConfig.url,
+    headers: axiosConfig.headers,
+    body,
+  }
+}
+
+// Serialize axios response object, extracting safe properties to avoid circular references
+function serializeAxiosResponse(axiosResponse: any) {
+  if (!axiosResponse) {
+    return axiosResponse
+  }
+  return {
+    statusCode: axiosResponse.status,
+    headers: axiosResponse.headers,
+    body: axiosResponse.data,
+  }
+}
+
 // Similar to the stdSerializers in bunyan, but with a few extra fields (query and body mostly)
 export function createDetailedRequestSerializers() {
   const serializers: Logger.Serializers = {}
@@ -234,19 +272,31 @@ export function createDetailedRequestSerializers() {
 
     const result = Logger.stdSerializers.err(err)
 
-    if (!isGotError(err)) {
-      return result
+    if (isGotError(err)) {
+      const response = err.response
+      const request = makeFakeRequestFromGotOptions(err.options)
+
+      // Add the request and response to the log record, when the error is from the got library
+      return {
+        ...result,
+        request: serializers.req(request),
+        response: responseSerializer(response, true),
+      }
     }
 
-    const response = err.response
-    const request = makeFakeRequestFromGotOptions(err.options)
+    if (isAxiosError(err)) {
+      const response = err.response
+      const request = makeFakeRequestFromAxiosConfig(err.config)
 
-    // Add the request and response to the log record, when the error is from the got library
-    return {
-      ...result,
-      request: serializers.req(request),
-      response: responseSerializer(response, true),
+      // Add the request and response to the log record, when the error is from the axios library
+      return {
+        ...result,
+        request: serializers.req(request),
+        response: serializeAxiosResponse(response),
+      }
     }
+
+    return result
   }
 
   return serializers
