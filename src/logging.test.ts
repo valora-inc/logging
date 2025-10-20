@@ -587,7 +587,10 @@ describe('logger serialization', () => {
     })
 
     it('should add request and response details when the server response is not successful', async () => {
-      listeningServer = express().listen(42424)
+      const app = express()
+      listeningServer = app.listen(42424)
+      // Disable keep-alive to avoid platform-specific keep-alive headers
+      listeningServer.keepAliveTimeout = 0
       const logger = createLogger()
       const gotError = await got
         .post(`http://127.0.0.1:42424/does-not-exist`, {
@@ -611,8 +614,6 @@ describe('logger serialization', () => {
                 date: expect.any(String),
                 // Ignore connection-related headers as they can vary
                 connection: expect.any(String),
-                // keep-alive header is optional (platform-dependent)
-                'keep-alive': expect.anything(),
               },
             },
           },
@@ -654,7 +655,6 @@ describe('logger serialization', () => {
                 "content-security-policy": "default-src 'none'",
                 "content-type": "text/html; charset=utf-8",
                 "date": Any<String>,
-                "keep-alive": Anything,
                 "x-content-type-options": "nosniff",
               },
               "statusCode": 404,
@@ -736,7 +736,10 @@ describe('logger serialization', () => {
     })
 
     it('should add request and response details when the server response is not successful', async () => {
-      listeningServer = express().listen(42425)
+      const app = express()
+      listeningServer = app.listen(42425)
+      // Disable keep-alive to avoid platform-specific keep-alive headers
+      listeningServer.keepAliveTimeout = 0
       const logger = createLogger()
       const axiosError = await axios
         .post(`http://127.0.0.1:42425/does-not-exist`, {
@@ -764,8 +767,6 @@ describe('logger serialization', () => {
                 date: expect.any(String),
                 // Ignore connection-related headers as they can vary
                 connection: expect.any(String),
-                // keep-alive header is optional (platform-dependent)
-                'keep-alive': expect.anything(),
               },
             },
           },
@@ -808,7 +809,6 @@ describe('logger serialization', () => {
                 "content-security-policy": "default-src 'none'",
                 "content-type": "text/html; charset=utf-8",
                 "date": Any<String>,
-                "keep-alive": Anything,
                 "x-content-type-options": "nosniff",
               },
               "statusCode": 404,
